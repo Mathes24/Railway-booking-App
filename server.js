@@ -279,12 +279,47 @@ app.post('/api/tickets/:id/cancel', async (req, res) => {
 
 // Admin stats
 app.get('/api/admin/stats', async (req, res) => {
-    const data = {
+    const stats = {
         users: (await db.get('SELECT COUNT(*) as c FROM Users')).c,
         tickets: (await db.get('SELECT COUNT(*) as c FROM Tickets')).c,
-        revenue: (await db.get("SELECT SUM(totalPrice) as r FROM Tickets WHERE status != 'Cancelled'")).r || 0
+        revenue: (await db.get("SELECT SUM(totalPrice) as r FROM Tickets WHERE status != 'Cancelled'")).r || 0,
+        trains: (await db.get('SELECT COUNT(*) as c FROM Trains')).c
     };
-    res.json({ success: true, data });
+    res.json({ success: true, data: stats });
+});
+
+app.get('/api/admin/trains', async (req, res) => {
+    const trains = await db.all('SELECT * FROM Trains ORDER BY id DESC');
+    for (const t of trains) {
+        t.liveStatus = liveStatuses[t.id] || { delay: 0, message: 'On Time' };
+    }
+    res.json({ success: true, data: trains });
+});
+
+app.post('/api/admin/trains', async (req, res) => {
+    const { name, source, destination, date, time, totalSeats, price } = req.body;
+    try {
+        const result = await db.run(
+            'INSERT INTO Trains (name, source, destination, date, time, totalSeats, price) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [name, source, destination, date, time, totalSeats || 72, price]
+        );
+        const trainId = result.lastID;
+        liveStatuses[trainId] = { delay: 0, message: 'On Time' };
+        res.json({ success: true, trainId });
+    } catch (e) {
+        res.status(400).json({ error: e.message });
+    }
+});
+
+app.get('/api/admin/bookings', async (req, res) => {
+    const bookings = await db.all(`
+        SELECT t.*, u.name as userName, u.email as userEmail, tr.name as trainName
+        FROM Tickets t
+        JOIN Users u ON t.userId = u.id
+        JOIN Trains tr ON t.trainId = tr.id
+        ORDER BY t.bookingDate DESC
+    `);
+    res.json({ success: true, data: bookings });
 });
 
 // AI Recommendations
