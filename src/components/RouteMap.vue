@@ -12,7 +12,12 @@ export default {
   props: {
     source: { type: String, required: true },
     destination: { type: String, required: true },
-    delay: { type: Number, default: 0 }
+    delay: { type: Number, default: 0 },
+    message: { type: String, default: 'On Time' }
+  },
+  watch: {
+    delay() { this.initMap(); },
+    message() { this.initMap(); }
   },
   mounted() {
     this.initMap();
@@ -24,6 +29,8 @@ export default {
   },
   methods: {
     initMap() {
+      if (this.map) this.map.remove();
+
       const L = window.L;
       if (!L) {
          console.error("Leaflet failed to load onto the window.");
@@ -46,13 +53,13 @@ export default {
       // Core Anchor Locations
       const dotIconSrc = L.divIcon({
         className: 'custom-div-icon',
-        html: "<div style='background-color: var(--primary); width: 14px; height: 14px; border-radius: 50%; border: 3px solid #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);'></div>",
+        html: `<div style='background-color: var(--primary); width: 14px; height: 14px; border-radius: 50%; border: 3px solid #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);'></div>`,
         iconSize: [14, 14],
         iconAnchor: [7, 7]
       });
       const dotIconDest = L.divIcon({
         className: 'custom-div-icon',
-        html: "<div style='background-color: var(--primary); width: 14px; height: 14px; border-radius: 50%; border: 3px solid #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);'></div>",
+        html: `<div style='background-color: var(--primary); width: 14px; height: 14px; border-radius: 50%; border: 3px solid #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);'></div>`,
         iconSize: [14, 14],
         iconAnchor: [7, 7]
       });
@@ -71,19 +78,24 @@ export default {
 
       this.map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
 
-      // Simulated Intelligent Trajectory: Extrapolates distance based on 'delay' values
-      const progress = this.delay > 10 ? 0.35 : 0.78; 
+      // Simulated Intelligent Trajectory: 
+      // Higher delay suggests the train is "further back" in the schedule
+      const baseProgress = 0.65;
+      const progressAdjustment = Math.max(-0.4, (this.delay / 60) * -0.5); 
+      const progress = Math.min(0.95, Math.max(0.05, baseProgress + progressAdjustment));
+      
       const currentLat = srcCoord[0] + (destCoord[0] - srcCoord[0]) * progress;
       const currentLng = srcCoord[1] + (destCoord[1] - srcCoord[1]) * progress;
 
       const trainIcon = L.divIcon({
         className: 'train-icon-sim',
-        html: "<div class='pulse-dot' style='background-color: #ff4757; width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 20px rgba(255, 71, 87, 0.8); display: flex; align-items: center; justify-content: center;'><span style='font-size: 11px'>🚆</span></div>",
+        html: `<div class='pulse-dot' style='background-color: ${this.delay > 0 ? "#ff4757" : "#2ed573"}; width: 18px; height: 18px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 20px rgba(255, 71, 87, 0.8); display: flex; align-items: center; justify-content: center;'><span style='font-size: 11px'>🚆</span></div>`,
         iconSize: [18, 18],
         iconAnchor: [9, 9]
       });
 
-      L.marker([currentLat, currentLng], { icon: trainIcon }).addTo(this.map).bindPopup("<strong>Tracked Position</strong><br>GPS Simulation active.").openPopup();
+      L.marker([currentLat, currentLng], { icon: trainIcon }).addTo(this.map)
+        .bindPopup(`<strong>Tracked Position</strong><br>Status: ${this.message}`).openPopup();
     }
   }
 }

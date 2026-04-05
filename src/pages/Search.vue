@@ -30,27 +30,27 @@
       <h3 style="margin: 2rem 0 1rem; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
         <span style="font-size: 1.5rem;">✨</span> {{ $t('search.recommendedTitle') }}
       </h3>
-      <div class="train-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+      <div class="train-list" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
         <div v-for="train in recommendations" :key="'rec'+train.id" class="card train-card glowing-ai-card">
           <div class="train-info" style="width: 100%;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-              <h4 style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
-                {{ train.name }}
-              </h4>
-              <div class="price" style="font-size: 1.25rem;">₹{{ train.price }}</div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; align-items: center;">
+              <span class="ai-badge">AI Pick</span>
+              <div class="price" style="font-size: 1.1rem; margin: 0;">₹{{ train.price }}</div>
             </div>
             
-            <div class="route" style="font-size: 1rem; margin: 0.25rem 0;">
+            <h4 style="margin: 0.5rem 0 0.25rem;">{{ train.name }}</h4>
+            
+            <div class="route" style="font-size: 0.95rem; margin: 0.25rem 0;">
               <span>{{ train.source }}</span> <span class="arrow">→</span> <span>{{ train.destination }}</span>
             </div>
             
-            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
-              <span v-for="(reason, i) in train.aiReasons" :key="i" class="ai-tag">
-                🤖 {{ reason }}
-              </span>
+            <div style="display: flex; flex-direction: column; gap: 0.4rem; margin-top: 1rem;">
+              <div v-for="(reason, i) in train.aiReasons" :key="i" class="ai-reason" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                <span style="color: var(--primary);">✦</span> {{ reason }}
+              </div>
             </div>
 
-            <div style="margin-top: 1.5rem; text-align: right;">
+            <div style="margin-top: 1.5rem;">
               <router-link :to="'/booking/' + train.id" class="btn btn-sm" style="width: 100%;">{{ $t('search.bookAiPick') }}</router-link>
             </div>
           </div>

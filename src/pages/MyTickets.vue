@@ -85,7 +85,12 @@
            <h4 style="margin-top: 0; padding-top: 1rem; border-top: 1px dashed var(--border); color: #00f2fe; display: flex; align-items: center; gap: 0.5rem">
              🟢 Live GPS Tracking
            </h4>
-           <RouteMap :source="ticket.trainDetails.source" :destination="ticket.trainDetails.destination" :delay="15" />
+            <RouteMap 
+              :source="ticket.trainDetails.source" 
+              :destination="ticket.trainDetails.destination" 
+              :delay="liveData[ticket.trainId]?.delay || 0" 
+              :message="liveData[ticket.trainId]?.message || 'Connecting...'"
+            />
         </div>
       </div>
     </div>
@@ -101,7 +106,9 @@ export default {
     return {
       tickets: [],
       loading: true,
-      activeMap: null
+      activeMap: null,
+      pollInterval: null,
+      liveData: {}
     }
   },
   async mounted() {
@@ -112,12 +119,36 @@ export default {
     }
     this.fetchTickets();
   },
+  beforeUnmount() {
+    if (this.pollInterval) clearInterval(this.pollInterval);
+  },
   methods: {
     toggleMap(ticketId) {
       if (this.activeMap === ticketId) {
         this.activeMap = null;
+        if (this.pollInterval) {
+          clearInterval(this.pollInterval);
+          this.pollInterval = null;
+        }
       } else {
         this.activeMap = ticketId;
+        const ticket = this.tickets.find(t => t.id === ticketId);
+        if (ticket) {
+          this.fetchLiveStatus(ticket.trainId);
+          if (this.pollInterval) clearInterval(this.pollInterval);
+          this.pollInterval = setInterval(() => this.fetchLiveStatus(ticket.trainId), 5000);
+        }
+      }
+    },
+    async fetchLiveStatus(trainId) {
+      try {
+        const res = await fetch(`/api/trains/${trainId}`);
+        const data = await res.json();
+        if (data.success) {
+          this.liveData[trainId] = data.data.liveStatus;
+        }
+      } catch (e) {
+        console.error("Failed to poll live status");
       }
     },
     async fetchTickets() {
