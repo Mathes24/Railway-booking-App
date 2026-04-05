@@ -333,6 +333,12 @@ app.get('/api/trains/recommendations/:userId', async (req, res) => {
 });
 
 // Catch-all route for SPA client-side routing (Express 5/Node 24 compatibility)
-app.get(/.*/, (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+app.get('(.*)', (req, res) => {
+    const indexPath = path.join(__dirname, 'dist', 'index.html');
+    res.sendFile(indexPath, (err) => {
+        if (err) {
+            console.error('SPA Fallback Error (index.html not found!):', err);
+            res.status(404).send('Error: Could not find application build. Please rebuild using npm run build.');
+        }
+    });
 });

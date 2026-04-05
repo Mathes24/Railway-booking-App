@@ -44,7 +44,7 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   // Handle API Requests: Network First, then Cache
-  if (url.pathname.startsWith('/api/') || url.port === '3000' || url.port === '5000') {
+  if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
@@ -80,7 +80,7 @@ self.addEventListener('fetch', (event) => {
         }).catch(() => {
           // If network fails and it's navigation, return offline/cached index
           if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
+            return caches.match('/index.html') || fetch('/');
           }
         });
       })
