@@ -7,9 +7,9 @@ services:
     envVars:
       - key: DB_PATH
         value: /data/database.sqlite
+      - key: PORT
+        value: 10000
     disk:
       name: railway-db
-      mountPath: /data
-      sizeGB: 1
       mountPath: /data
       sizeGB: 1

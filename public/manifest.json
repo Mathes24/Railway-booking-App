@@ -1,16 +1,19 @@
 {
   "name": "Railway Ticket Booking",
   "short_name": "Railway",
-  "description": "Book your train tickets quickly and securely.",
+  "description": "Book your train tickets quickly and securely with our premium AI-powered platform.",
+  "id": "/",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0B0E14",
   "theme_color": "#0B0E14",
   "icons": [
     {
       "src": "/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512x512.png",
