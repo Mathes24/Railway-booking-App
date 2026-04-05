@@ -333,7 +333,7 @@ app.get('/api/trains/recommendations/:userId', async (req, res) => {
 });
 
 // Catch-all route for SPA client-side routing (Express 5/Node 24 compatibility)
-app.get('(.*)', (req, res) => {
+app.get('*', (req, res) => {
     const indexPath = path.join(__dirname, 'dist', 'index.html');
     res.sendFile(indexPath, (err) => {
         if (err) {
