@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: railway-ticket-booking
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: DB_PATH
+        value: /data/database.sqlite
+    disk:
+      name: railway-db
+      mountPath: /data
+      sizeGB: 1
+      mountPath: /data
+      sizeGB: 1
